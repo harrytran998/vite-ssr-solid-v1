@@ -1,9 +1,9 @@
-import { createSignal } from "solid-js";
-import { hydrate } from "solid-js/web";
-import { IPageContext } from "types";
+import { createSignal } from 'solid-js';
+import { hydrate } from 'solid-js/web';
+import { IPageContext } from 'types';
 
-import { ContextProvider } from "../composables/usePageContext";
-import PageLayout, { Route } from "#/layout/BaseLayout";
+import { ContextProvider } from '../composables/usePageContext';
+import PageLayout, { Route } from '#/layouts/BaseLayout';
 
 let layoutReady = false;
 
@@ -11,9 +11,9 @@ let layoutReady = false;
 const [route, setRoute] = createSignal<Route | null>(null);
 
 function onRenderClient(pageContext: IPageContext) {
-  // Always get pageContext 
-  console.log("onRenderClient  👻  pageContext:", { pageContext });
-  const content = document.getElementById("dreams-root") as HTMLElement;
+  // Always get pageContext
+  console.log('onRenderClient  👻  pageContext:', { pageContext });
+  const content = document.getElementById('root') as HTMLElement;
   const { Page, pageProps } = pageContext;
 
   // Set the new route.
