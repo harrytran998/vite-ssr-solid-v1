@@ -1,38 +1,30 @@
-import { createSignal } from 'solid-js';
-import { hydrate } from 'solid-js/web';
-import { IPageContext } from 'types';
+import { createStore, reconcile } from "solid-js/store";
+import { hydrate, render } from "solid-js/web";
+import { IPageContext } from "types";
 
-import { ContextProvider } from '../composables/usePageContext';
-import PageLayout, { Route } from '#/layouts/BaseLayout';
+import { PageComponent } from "./PageComponent";
 
-let layoutReady = false;
+const [pageContextStore, setPageContext] = createStore<IPageContext>({} as IPageContext);
 
-// Central signal to track the current active route.
-const [route, setRoute] = createSignal<Route | null>(null);
+let dispose: () => void;
+let rendered = false;
 
 function onRenderClient(pageContext: IPageContext) {
-  // Always get pageContext
-  console.log('onRenderClient  👻  pageContext:', { pageContext });
-  const content = document.getElementById('root') as HTMLElement;
-  const { Page, pageProps } = pageContext;
+  if (!rendered) {
+    const content = document.getElementById("dreams-root") as HTMLElement;
 
-  // Set the new route.
-  setRoute({ Page, pageProps });
+    // Dispose to prevent duplicate pages when navigating.
+    if (dispose) dispose();
+    setPageContext(pageContext);
 
-  // If haven't rendered the layout yet, do so now.
-  if (!layoutReady) {
-    // Render the page.
-    // This is the first page rendering; the page has been rendered to HTML
-    // and we now make it interactive.
-    hydrate(
-      () => (
-        <ContextProvider pageContext={pageContext}>
-          <PageLayout route={() => route()} />
-        </ContextProvider>
-      ),
-      content
-    );
-    layoutReady = true;
+    if (pageContext.isHydration) {
+      dispose = hydrate(() => <PageComponent pageContext={pageContextStore} isClient />, content);
+    } else {
+      dispose = render(() => <PageComponent pageContext={pageContextStore} isClient />, content);
+    }
+    rendered = true;
+  } else {
+    setPageContext(reconcile(pageContext));
   }
 }
 
